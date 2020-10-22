@@ -64,9 +64,21 @@ end
 
 function Level2:draw()
   
+  local gw = lg.getWidth() / camera.scale
+  local gh = lg.getHeight() / camera.scale
+  
   for i,block in ipairs( self.blocks ) do
-    block:draw()
+    if ( block.pos.x > camera.x-gw/2-10 and block.pos.x < camera.x+gw/2 and block.pos.y > camera.y-gh/2 - 10 and block.pos.y < camera.y+gh/2 ) then
+      block:draw()
+    end
   end
+  
+  --[[
+  --Testing screen sized rectangle
+  lg.setColor(0.5, 0.5, 0,0.5)
+  lg.rectangle("fill",camera.x-gw/2,camera.y-gh/2,gw,gh)
+  lg.setColor(1,1,1,1)
+  --]]
   
   if ( false ) then --Show Chechpoint squares
     lg.setColor(0.5, 0.5, 0,0.5)

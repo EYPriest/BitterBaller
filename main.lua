@@ -27,6 +27,9 @@ scene = nil
 local game = nil
 local title = nil
 
+local block_sprite = lg.newImage("res/Block1.png")
+--sb = lg.newSpriteBatch(block_sprite,2000)
+
 --Load
 function love.load()
   

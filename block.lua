@@ -19,6 +19,7 @@ function Block:init(pos)
   
   self.type = Block.BLOCK_TYPE_SQUARE
   
+  --sb:add(self.pos.x,self.pos.y,0,SCALE,SCALE)
 end
 
 function Block:draw()

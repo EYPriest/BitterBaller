@@ -10,6 +10,13 @@ local checkpoint = 0
 local dead_countdown_time = 20
 local dead_countdown = dead_countdown_time
 
+debug_time_t1 = 0
+debug_time_t2 = 0
+debug_time_t3 = 0
+debug_time_t4 = 0
+debug_time_t5 = 0
+debug_time_t6 = 0
+
 function Game:init()
   
   local spawn_position
@@ -73,6 +80,8 @@ end
 -- Update
 function Game:update(dt)
   
+  debug_time_t1 = love.timer.getTime()
+  
   if ( self.state == self.STATE_ALIVE ) then
     
     self.ball:update(dt)
@@ -110,16 +119,26 @@ function Game:update(dt)
   --local dx,dy = self.player.pos.x - camera.x, self.player.pos.y - camera.y
   --camera:move(dx/2,dy/2)
   
+  debug_time_t2 = love.timer.getTime()
+  
 end
 
 -- Draw
 function Game:draw()
   
+  debug_time_t3 = love.timer.getTime()
+  
   camera:attach()
 
   self.ball:draw()
+  debug_time_t4 = love.timer.getTime()
   self.bob:draw()
+  debug_time_t5 = love.timer.getTime()
   self.level:draw()
+  --lg.draw(sb)
+  debug_time_t6 = love.timer.getTime()
+  
+
  
  if ( self.state == self.STATE_WIN ) then
  
@@ -180,6 +199,14 @@ function Game:draw()
     end
     
   end
+  
+  
+  
+  lg.print( "update: " .. (debug_time_t2 - debug_time_t1)*60, -230 + camera.x, -120 + camera.y, 0, 1,1 )
+  lg.print( "draw: " .. (debug_time_t6 - debug_time_t3)*60, -230 + camera.x, -105 + camera.y, 0, 1,1 )
+  lg.print( "ball: " .. (debug_time_t4 - debug_time_t3)*60, -230 + camera.x, -90 + camera.y, 0, 1,1 )
+  lg.print( "bob: " .. (debug_time_t5 - debug_time_t4)*60, -230 + camera.x, -75 + camera.y, 0, 1,1 )
+  lg.print( "level: " .. (debug_time_t6 - debug_time_t5)*60, -230 + camera.x, -60 + camera.y, 0, 1,1 )
   
   camera:detach()
   
