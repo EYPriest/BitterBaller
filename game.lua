@@ -17,6 +17,21 @@ debug_time_t4 = 0
 debug_time_t5 = 0
 debug_time_t6 = 0
 
+local store_dt = 0
+local dt_per_frame = 1/60
+
+
+function Game:restart()
+
+  dead_countdown = dead_countdown_time
+  
+  self.ball = {}
+  self.ball = {}
+  self.level = {}
+  
+  Game.init(self)
+end
+
 function Game:init()
   
   local spawn_position
@@ -46,7 +61,7 @@ function Game:init()
   --self.ball = Ball({x=1170,y=150})
   --self.ball = Ball({x=1110,y=150})
   self.bob = Bob(self.ball)
-  camera:lookAt(self.ball.pos.x,self.ball.pos.y)
+  camera:lookAt(self.ball.pos.x,self.ball.pos.y-16)
   
   self.level = Level2()
   --Level2()
@@ -80,7 +95,35 @@ end
 -- Update
 function Game:update(dt)
   
-  debug_time_t1 = love.timer.getTime()
+  store_dt = store_dt + dt
+  
+  --[[
+  if (store_dt >= dt_per_frame) then
+    print("k")
+  else
+    print("nah")
+  end
+  --]]
+  
+  while ( store_dt >= dt_per_frame ) do
+    store_dt = store_dt - dt_per_frame
+    Game.DoATick(self,dt_per_frame)
+  end
+
+  
+end
+
+function Game:DoATick(dt)
+  
+  camera.scale = love.graphics.getHeight() / 240
+  
+  --[[
+  if dt > 1/60 then
+    dt = 1/60
+  end
+  --]]
+  
+  --debug_time_t1 = love.timer.getTime()
   
   if ( self.state == self.STATE_ALIVE ) then
     
@@ -108,7 +151,8 @@ function Game:update(dt)
     dead_countdown = dead_countdown -1
     if ( dead_countdown < 0 ) then
       dead_countdown = dead_countdown_time
-      love.load()
+      Game.restart(self)
+      --love.load()
     end
   elseif ( self.state == self.STATE_WIN ) then
     camera:lookAt(0,-120)
@@ -119,24 +163,23 @@ function Game:update(dt)
   --local dx,dy = self.player.pos.x - camera.x, self.player.pos.y - camera.y
   --camera:move(dx/2,dy/2)
   
-  debug_time_t2 = love.timer.getTime()
-  
+  --debug_time_t2 = love.timer.getTime()
 end
 
 -- Draw
 function Game:draw()
   
-  debug_time_t3 = love.timer.getTime()
+  --debug_time_t3 = love.timer.getTime()
   
   camera:attach()
 
   self.ball:draw()
-  debug_time_t4 = love.timer.getTime()
+  --debug_time_t4 = love.timer.getTime()
   self.bob:draw()
-  debug_time_t5 = love.timer.getTime()
+  --debug_time_t5 = love.timer.getTime()
   self.level:draw()
   --lg.draw(sb)
-  debug_time_t6 = love.timer.getTime()
+  --debug_time_t6 = love.timer.getTime()
   
 
  
@@ -200,15 +243,35 @@ function Game:draw()
     
   end
   
+  --love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
   
-  
+  --[[
   lg.print( "update: " .. (debug_time_t2 - debug_time_t1)*60, -230 + camera.x, -120 + camera.y, 0, 1,1 )
   lg.print( "draw: " .. (debug_time_t6 - debug_time_t3)*60, -230 + camera.x, -105 + camera.y, 0, 1,1 )
   lg.print( "ball: " .. (debug_time_t4 - debug_time_t3)*60, -230 + camera.x, -90 + camera.y, 0, 1,1 )
   lg.print( "bob: " .. (debug_time_t5 - debug_time_t4)*60, -230 + camera.x, -75 + camera.y, 0, 1,1 )
   lg.print( "level: " .. (debug_time_t6 - debug_time_t5)*60, -230 + camera.x, -60 + camera.y, 0, 1,1 )
+  --]]
+  
+  --    love.graphics.print(string.format("Safe Area %dx%d %d°",
+  --     w, h, portland.orientation),22,40)
+  
+
+  wb,hb = love.window.getMode()
+  
+  --[[
+  lg.print(string.format("Get W, H: %dx%d", lg.getWidth(), lg.getHeight()),-230 + camera.x,-120 + camera.y, 0,1,1)
+  lg.print(string.format("SafeArea: %dx%d", wa, ha),-230 + camera.x,-105 + camera.y, 0)
+  lg.print(string.format("Get Mode: %dx%d", wb, hb),-230 + camera.x,-90 + camera.y, 0)
+  --]]
   
   camera:detach()
   
+  lg.print(string.format("Get W, H: %dx%d", lg.getWidth(), lg.getHeight()),4,3, 0,1,1)
+  if ( mobile ) then
+    xa,ya,wa,ha = love.window.getSafeArea()
+    lg.print(string.format("SafeArea: %dx%d", wa, ha),4,16, 0)
+  end
+  lg.print(string.format("Get Mode: %dx%d", wb, hb),4,29, 0)
+  
 end
-

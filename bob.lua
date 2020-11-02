@@ -23,12 +23,12 @@ function Bob:init(ball)
   self.jump_start_time_ac = 0
   
   --self.jump_boost = 3
-  self.jump_boost = 2
+  self.jump_boost = 1
   
   self.speed_y = 0
   
-  self.friction = {x=0.06,y=0.02}
-  self.gravity = 0.2
+  self.friction = {x=0.06,y=0.01} -- was y=0.02
+  self.gravity = 0.16
   
   self.can_start_jump = false
   
@@ -46,6 +46,9 @@ function Bob:keypressed(key)
       self.attached = false
       self.ball.attached = false
       self.jump_start_time_ac = 0
+      if ( self.ball.speed.y < 0 ) then
+        self.ball.speed.y = 0
+      end
     end
     
   end

@@ -40,7 +40,7 @@ function Ball:init(pos)
   self.thrust_amount = {x=0.16,y=0} -- I think y thrust isn't used
   self.thrust = {x=0,y=0}
   self.speed = {x=0,y=0}
-  self.friction = {x=0.06,y=0.02}
+  self.friction = {x=0.06,y=0.01}
   self.gravity = 0.16
   
   self.distance_moved = 0
@@ -141,9 +141,9 @@ function Ball:update(dt)
   local touches = love.touch.getTouches( )
   for i, id in ipairs(touches) do
     local x, y = love.touch.getPosition(id) 
-    if ( x >= 0 and x < lg.getWidth() / 8 ) then
+    if ( x >= 0 and x < lg.getWidth() / 12 ) then
       leftTouch = true
-    elseif ( x >= lg.getWidth() / 8 and x < lg.getWidth() / 2 ) then
+    elseif ( x >= lg.getWidth() / 12 and x < lg.getWidth() / 2 ) then
       rightTouch = true
     end 
     
@@ -198,7 +198,6 @@ function Ball:update(dt)
   -- basicly, you're still grounded after jumping... which explains the multijump bug
   
   if ( love.keyboard.isDown('space') or jumpTouch ) then
-    
     if ( self.attached ) then
       self.jump_start_time_ac = self.jump_start_time_ac + dt
       if ( self.jump_start_time_ac < self.jump_start_time and self.grounded == true ) then
@@ -226,12 +225,12 @@ function Ball:update(dt)
   -- Gotta move, THEN find blocks for collision.
   -- OR gotta get more blocks
   
-  
   -- Move Player
   -- Left/Right
   if ( self.speed.x < -0.0 or self.speed.x > 0.0 ) then
     self.pos.x = self.pos.x + self.speed.x
     --self.distance_moved = self.distance_moved + self.speed
+  
   
     --Get 4 Closest blocks for collision detection
     -- Find Close Blocks
@@ -345,10 +344,13 @@ function Ball:update(dt)
   --self.speed.x = (self.speed.x + self.thrust.x) * (1-self.friction.x)
   self.speed.y = (self.speed.y - self.thrust.y) * (1-self.friction.y)
   
+  --[[
   -- Add Gravity to Speed
   if ( on_a_ramp == false ) then
     self.speed.y = self.speed.y + self.gravity --Does this do anything??
+    --Also, I already add this above?? why do it twice??
   end
+--]]
   
   --TODO: gravity should pull you down a ramp too
   
@@ -358,9 +360,12 @@ function Ball:update(dt)
   -- Up/Down
   self.pos.y = self.pos.y + self.speed.y
   
+  --print(dt*60)
+  
+  
   --Get 4 Closest blocks for collision detection
   -- Find Close Blocks
-    
+  
   local left =  floor(self.pos.x / 8)
   local right = floor((self.pos.x+self.ball_width) / 8)
   local top = floor(self.pos.y / 8)
