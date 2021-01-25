@@ -1,3 +1,8 @@
+---------------
+-- Bitter Baller
+-- Created by: Eli Priest
+---------------
+
 Class = require "hump.class"
 Camera = require "hump.camera"
 
@@ -6,15 +11,10 @@ Camera = require "hump.camera"
 local lg = love.graphics
 lg.setDefaultFilter("nearest","nearest")
 
---SCALE = love.graphics.getHeight() / 240
-SCALE = 1
-
 --require "player"
 require "ball"
-require "title"
 require "game"
 require "block"
-require "level1"
 require "level2"
 require "ramp"
 require "top_block"
@@ -28,7 +28,8 @@ local game = nil
 local title = nil
 
 local block_sprite = lg.newImage("res/Block1.png")
---sb = lg.newSpriteBatch(block_sprite,2000)
+
+local web_version = false
 
 --Load
 function love.load()
@@ -40,10 +41,7 @@ function love.load()
     mobile = true
   end
   
-  --ProFi:start()
-  
   camera = Camera(0,0)
-  --camera.scale = 3
   camera.scale = love.graphics.getHeight() / 240
   
   game = Game()
@@ -51,20 +49,16 @@ function love.load()
   
 end
 
-
 --Inputs
 function love.keypressed(key)
-  if key == 'escape' then
+  if not web_version and key == 'escape' then
     love.event.quit( 0 )
   else
     game:keypressed(key)
   end
 end
 
---function love.keyboard.isDown
-
 function love.keyreleased(key)
-  --Player:keyreleased(key)
   game:keyreleased(key)
 end
 
@@ -92,6 +86,11 @@ end
 
 function love.update(dt)
 
+  new_scale = love.graphics.getHeight() / 240
+  if ( new_scale ~= camera.scale ) then
+    camera.scale = new_scale
+  end
+
   scene:update(dt)
   
 end
@@ -103,8 +102,7 @@ function love.draw()
 end
 
 function love.quit()
-  --ProFi:stop()
-  --ProFi:writeReport()
+
 end
 
 --AABB to AABB

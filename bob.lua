@@ -22,25 +22,20 @@ function Bob:init(ball)
   self.jump_start_time = 0.2
   self.jump_start_time_ac = 0
   
-  --self.jump_boost = 3
   self.jump_boost = 1
   
   self.speed_y = 0
   
-  self.friction = {x=0.06,y=0.01} -- was y=0.02
+  self.friction = {x=0.06,y=0.01}
   self.gravity = 0.16
   
   self.can_start_jump = false
   
-  --self.is_jump_held = false
 end
 
 function Bob:keypressed(key)
   
-  --print("a")
-  
   if ( key == 'space' ) then
-    --if ( self.ball.is_grounded ~= true ) then
     if ( self.ball.must_release == false and self.attached ) then
       self.can_start_jump = true
       self.attached = false
@@ -50,29 +45,13 @@ function Bob:keypressed(key)
         self.ball.speed.y = 0
       end
     end
-    
   end
   
 end
-
---[[
-function Bob:touchpressed(id,x,y,dx,dy,pressure)
-  if ( x >= lg.getWidth() / 2 ) then
-    -- Copied from above.
-    if ( self.ball.must_release == false and self.attached ) then
-      self.can_start_jump = true
-      self.attached = false
-      self.ball.attached = false
-      self.jump_start_time_ac = 0
-    end
-  end
-end
---]]
 
 function Bob:update(dt)
   
-  --TODO: don't repeat code that's in ball
-  -- I should probably make variables in game that store keypress information
+  --[[
   local jumpTouch = false
   local touches = love.touch.getTouches( )
   
@@ -82,52 +61,29 @@ function Bob:update(dt)
       jumpTouch = true
     end
   end
-  
-  if ( jumpTouch == true ) then
-    if ( self.ball.must_release == false and self.attached ) then
-      self.can_start_jump = true
-      self.attached = false
-      self.ball.attached = false
-      self.jump_start_time_ac = 0
-    end
-  end
-  
-  --[[
-  if ( self.is_jump_held == false and jumpTouch == true ) then
-    if ( self.ball.must_release == false and self.attached ) then
-      self.can_start_jump = true
-      self.attached = false
-      self.ball.attached = false
-      self.jump_start_time_ac = 0
-    end
-    self.is_jump_held = true
-  elseif ( self.is_jump_held == true and jumpTouch == false ) then
-    is_jump_held = false
-  end
   --]]
   
+  --if ( jumpTouch == true ) then
+  if ( jump_touch ) then
+    if ( self.ball.must_release == false and self.attached ) then
+      self.can_start_jump = true
+      self.attached = false
+      self.ball.attached = false
+      self.jump_start_time_ac = 0
+    end
+  end
   
   -- This lets you hold the button down to jump higher
-  if ( love.keyboard.isDown('space') or jumpTouch ) then
-    --if ( self.attached and self.ball.bob_ready == true ) then
-    --if ( self.can_start_jump and self.ball.is_grounded == false ) then
+  --if ( love.keyboard.isDown('space') or jumpTouch ) then
+  if ( love.keyboard.isDown('space') or jump_touch ) then
     if ( self.can_start_jump ) then
       self.jump_start_time_ac = self.jump_start_time_ac + dt
-      --if ( self.jump_start_time_ac < self.jump_start_time and self.grounded == true ) then
       if ( self.jump_start_time_ac < self.jump_start_time ) then
-        --self.speed.y = -6
         self.speed_y = -self.jump_boost
       end
     end
-    
-    
-    
-    --if ( self.attached ~= true ) then
-    --  self.speed_y = -self.jump_boost
-    --end
+
   else
-    --self.thrust.y = 0
-    -- Turn off ability to jump when jump is released
     self.can_start_jump = false
   end
   
@@ -151,9 +107,6 @@ function Bob:update(dt)
       self.can_start_jump = false
     end
   end
-  
-  
-  
   
   --Collisions
   --Get 4 Closest blocks for collision detection
@@ -184,14 +137,11 @@ function Bob:update(dt)
       
       if ( block.type == Block.BLOCK_TYPE_SQUARE or block.type == Block.BLOCK_TYPE_SPIKE ) then
       
-        --print("dead")
         self:die()
       end
     end
   end
 
-  
-  
 end
 
 function Bob:die()
@@ -201,6 +151,6 @@ end
 
 function Bob:draw()
   
-  lg.draw(self.sprite,self.pos.x,self.pos.y,0,SCALE,SCALE)
+  lg.draw(self.sprite,self.pos.x,self.pos.y,0)
   
 end

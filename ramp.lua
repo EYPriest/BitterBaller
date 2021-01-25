@@ -22,9 +22,9 @@ end
 function Ramp:draw()
   
   if ( self.flip ) then
-    lg.draw(sprite,self.pos.x,self.pos.y,0,-SCALE,SCALE,self.width,0)
+    lg.draw(sprite,self.pos.x,self.pos.y,0,-1,1,self.width,0)
   else 
-    lg.draw(sprite,self.pos.x,self.pos.y,0,SCALE,SCALE,0,0)
+    lg.draw(sprite,self.pos.x,self.pos.y,0,1,1,0,0)
   end
   
   --if (DEBUG_SHOW_CENTERPOINT) then

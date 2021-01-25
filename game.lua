@@ -20,6 +20,20 @@ debug_time_t6 = 0
 local store_dt = 0
 local dt_per_frame = 1/60
 
+--Store on Finger Release
+--last_move_touch = lg.getWidth() / 12
+--last_move_direction = 1 -- -1 for left, 1 for right
+movement_touch_line = lg.getWidth() / 12
+--print(movement_touch_line)
+
+--Current Stuff
+move_direction = 0
+jump_touch = false
+move_touch = -1
+
+--previous_release_move_direction = 0
+last_move_direction = 1
+
 
 function Game:restart()
 
@@ -46,25 +60,14 @@ function Game:init()
     spawn_position = {x=920,y=40}
   else
     spawn_position = {x=30,y=40}
-    --spawn_position = {x=900,y=340}
   end
-    
-  --self.ball = Ball({x=30,y=40})
   
   self.ball = Ball(spawn_position)
   
-  --self.ball = Ball({x=920,y=40})
-  --self.ball = Ball({x=30,y=340})
-  --self.ball = Ball({x=900,y=400})
-  
-  --self.ball = Ball({x=900,y=400})
-  --self.ball = Ball({x=1170,y=150})
-  --self.ball = Ball({x=1110,y=150})
   self.bob = Bob(self.ball)
   camera:lookAt(self.ball.pos.x,self.ball.pos.y-16)
   
   self.level = Level2()
-  --Level2()
   self.STATE_ALIVE = 1
   self.STATE_DEAD = 2
   self.STATE_WIN = 3
@@ -97,19 +100,10 @@ function Game:update(dt)
   
   store_dt = store_dt + dt
   
-  --[[
-  if (store_dt >= dt_per_frame) then
-    print("k")
-  else
-    print("nah")
-  end
-  --]]
-  
   while ( store_dt >= dt_per_frame ) do
     store_dt = store_dt - dt_per_frame
     Game.DoATick(self,dt_per_frame)
   end
-
   
 end
 
@@ -117,15 +111,103 @@ function Game:DoATick(dt)
   
   camera.scale = love.graphics.getHeight() / 240
   
-  --[[
-  if dt > 1/60 then
-    dt = 1/60
-  end
-  --]]
-  
   --debug_time_t1 = love.timer.getTime()
   
+  --print(last_move_touch)
+  
+  --print(movement_touch_line)
+  
   if ( self.state == self.STATE_ALIVE ) then
+    
+    -- Player Movement
+    
+    --[[
+    --local jumpTouch = false
+    local touches = love.touch.getTouches( )
+    local new_move_direction = 0
+    move_direction = 0
+    last_jump_touch = false
+    
+    for i, id in ipairs(touches) do
+      local x, y = love.touch.getPosition(id) 
+
+      if ( x >= 0 and x < lg.getWidth() / 2 ) then
+        leftTouch = true
+      elseif ( x >= lg.getWidth() / 12 and x < lg.getWidth() / 2 ) then
+        rightTouch = true
+      end
+
+      if ( x < lg.getWidth() / 2 ) then
+        
+        local offset = 0
+        if ( last_move_direction == -1 ) then
+          offset = 10
+        elseif ( last_move_direction == 1 ) then
+          offset = -10
+        end
+        
+        if ( x == last_move_touch + offset ) then
+          new_move_direction = last_move_direction
+        elseif ( x <= last_move_touch + offset ) then
+          new_move_direction = -1
+        elseif ( x >= last_move_touch + offset ) then
+          new_move_direction = 1
+        end
+        last_move_touch = x
+        last_move_direction = new_move_direction
+        move_direction = new_move_direction
+      end
+      
+      if ( x >= lg.getWidth() / 2 ) then
+        --jumpTouch = true
+        last_jump_touch = true
+      end
+    end
+    --]]
+    
+    
+    local new_move_touch = -1
+    
+    local previous_move_direction = move_direction
+    move_direction = 0
+    jump_touch = false
+    local touches = love.touch.getTouches( )
+    for i, id in ipairs(touches) do
+      local x, y = love.touch.getPosition(id) 
+      
+      if ( x < lg.getWidth() / 2 ) then
+        new_move_touch = x
+        if ( x == movement_touch_line ) then
+          move_direction = last_move_direction
+        elseif ( x < movement_touch_line ) then
+          move_direction = -1
+        elseif ( x > movement_touch_line ) then
+          move_direction = 1
+        end
+        last_move_direction = move_direction
+      elseif ( x >= lg.getWidth() / 2 ) then
+        --jumpTouch = true
+        jump_touch = true
+      end
+    end
+    
+    --[[
+    if ( move_touch ~= -1 and new_move_touch == -1 ) then -- finger release
+      movement_touch_line = move_touch - (20*previous_move_direction)
+    elseif ( move_touch == -1 and new_move_touch ~= -1 ) then -- finger press
+      movement_touch_line = new_move_touch - (20*move_direction)
+    end
+    move_touch = new_move_touch
+    --]]
+    
+    local offset = 20
+    if ( new_move_touch ~= -1 ) then
+      if ( new_move_touch > movement_touch_line + offset ) then
+        movement_touch_line = new_move_touch - offset
+      elseif ( new_move_touch < movement_touch_line - offset ) then
+        movement_touch_line = new_move_touch + offset
+      end
+    end
     
     self.ball:update(dt)
     self.bob:update(dt)
@@ -134,34 +216,23 @@ function Game:DoATick(dt)
     
     if ( checkpoint == 0 and self.ball.pos.x >= 800 ) then
       checkpoint = 1
-      --print("1")
     elseif ( checkpoint == 1 and self.ball.pos.y > 340 ) then
       checkpoint = 2
-      --print("2")
     elseif ( checkpoint == 2 and self.ball.pos.x >= 900 and self.ball.pos.y > 340 ) then
       checkpoint = 3
-      --print("3")
     elseif ( checkpoint == 3 and self.ball.pos.x >= 1020 and self.ball.pos.y < 216 ) then
       checkpoint = 4
-      --print("3")
     end
     
   elseif ( self.state == self.STATE_DEAD ) then
-    --Game:init()
     dead_countdown = dead_countdown -1
     if ( dead_countdown < 0 ) then
       dead_countdown = dead_countdown_time
       Game.restart(self)
-      --love.load()
     end
   elseif ( self.state == self.STATE_WIN ) then
     camera:lookAt(0,-120)
   end
-  
-  --TODO: look at Bob centerpoint
-  
-  --local dx,dy = self.player.pos.x - camera.x, self.player.pos.y - camera.y
-  --camera:move(dx/2,dy/2)
   
   --debug_time_t2 = love.timer.getTime()
 end
@@ -185,21 +256,7 @@ function Game:draw()
  
  if ( self.state == self.STATE_WIN ) then
  
-    --[[
-    --local cx,cy = camera:position()
     if (true) then
-    --if( self.state == self.STATE_WIN ) then
-      for w = 60,180 do
-        for h = -20,40 do
-          lg.draw(dog_sprite,w*8,h*8,0,SCALE,SCALE)
-        end
-      end
-    end
-    --]]
-    
-      --local cx,cy = camera:position()
-    if (true) then
-    --if( self.state == self.STATE_WIN ) then
       for w = -60,59 do
         for h = -30,-26 do
           lg.draw(dog_sprite,w*8,h*8,0,SCALE,SCALE)
@@ -207,9 +264,7 @@ function Game:draw()
       end
     end
     
-        --local cx,cy = camera:position()
     if (true) then
-    --if( self.state == self.STATE_WIN ) then
       for w = -60,59 do
         for h = -5,-1 do
           lg.draw(dog_sprite,w*8,h*8,0,SCALE,SCALE)
@@ -223,9 +278,6 @@ function Game:draw()
     for i = 1, #drawX do
       lg.draw(block_sprite,drawX[i]*8,drawY[i]*8,0,SCALE,SCALE)
     end
-    
-    --local drawX2 = {  2,  2,  2,  3,  3,  3,  4,  5,  5,  6,  7,  7,  7,  8,  8,  8        }
-    --local drawY2 = {-18,-17,-16,-15,-14,-13,-12,-13,-14,-12,-13,-14,-15,-16,-17,-18          }
     
     local drawX2 = {  3,  3,  3,  3,  3,  3,  4,  4,  5,  5,  5,  6,  6,  7,  7,  7,  7,  7,  7,   9,  9,  9,  9,  9,  9,  9 }
     local drawY2 = {-18,-17,-16,-15,-14,-13,-13,-12,-15,-14,-13,-12,-13,-13,-14,-15,-16,-17,-18, -18,-17,-16,-15,-14,-13,-12 }
@@ -243,35 +295,21 @@ function Game:draw()
     
   end
   
-  --love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
   
-  --[[
-  lg.print( "update: " .. (debug_time_t2 - debug_time_t1)*60, -230 + camera.x, -120 + camera.y, 0, 1,1 )
-  lg.print( "draw: " .. (debug_time_t6 - debug_time_t3)*60, -230 + camera.x, -105 + camera.y, 0, 1,1 )
-  lg.print( "ball: " .. (debug_time_t4 - debug_time_t3)*60, -230 + camera.x, -90 + camera.y, 0, 1,1 )
-  lg.print( "bob: " .. (debug_time_t5 - debug_time_t4)*60, -230 + camera.x, -75 + camera.y, 0, 1,1 )
-  lg.print( "level: " .. (debug_time_t6 - debug_time_t5)*60, -230 + camera.x, -60 + camera.y, 0, 1,1 )
-  --]]
   
-  --    love.graphics.print(string.format("Safe Area %dx%d %d°",
-  --     w, h, portland.orientation),22,40)
-  
-
-  wb,hb = love.window.getMode()
-  
-  --[[
-  lg.print(string.format("Get W, H: %dx%d", lg.getWidth(), lg.getHeight()),-230 + camera.x,-120 + camera.y, 0,1,1)
-  lg.print(string.format("SafeArea: %dx%d", wa, ha),-230 + camera.x,-105 + camera.y, 0)
-  lg.print(string.format("Get Mode: %dx%d", wb, hb),-230 + camera.x,-90 + camera.y, 0)
-  --]]
+  --wb,hb = love.window.getMode()
   
   camera:detach()
   
+  --lg.line(movement_touch_line,0,movement_touch_line,lg.getHeight())
+  
+  --[[
   lg.print(string.format("Get W, H: %dx%d", lg.getWidth(), lg.getHeight()),4,3, 0,1,1)
   if ( mobile ) then
     xa,ya,wa,ha = love.window.getSafeArea()
     lg.print(string.format("SafeArea: %dx%d", wa, ha),4,16, 0)
   end
   lg.print(string.format("Get Mode: %dx%d", wb, hb),4,29, 0)
+  --]]
   
 end
